@@ -1,0 +1,22 @@
+{
+  "name": "sense-breakout",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/index.js",
+  "scripts": {
+    "start": "node bin/index.js",
+    "build": "coffee -c -o bin/ src/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "lodash": "^4.17.4",
+    "sense-hat-led": "^1.0.1",
+    "sense-joystick": "0.0.2"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.12.5"
+  }
+}
