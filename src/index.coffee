@@ -1,5 +1,8 @@
-senseJoystick = require 'sense-joystick'
-senseLeds = require 'sense-hat-led'
+# senseJoystick = require 'sense-joystick'
+# senseLeds = require 'sense-hat-led'
+senseLeds =
+	setPixels: (arr) ->
+		console.log('setting', arr)
 _ = require 'lodash'
 Promise = require 'bluebird'
 
@@ -18,60 +21,59 @@ HEIGHT = 8
 WIDTH = 8
 
 position = (x, y) ->
+	console.log('xy', x, y)
+	console.log('(HEIGHT - x) * WIDTH + y', (HEIGHT - x) * WIDTH + y)
 	return (HEIGHT - x) * WIDTH + y
 
 class Actor
-	constructor: (@colour) ->
-	getColour: -> @colour
+	constructor: (@colour, @position) ->
 
 class Player extends Actor
 	constructor: ->
-		super(BLUE)
-		@position = position(0,4)
+		super(BLUE, position(0, 4))
 
 class Block extends Actor
 	constructor: (x,y) ->
-		super(RED)
-		@position = position(0,4)
+		super(RED, position(x, y))
 
 class Ball extends Actor
 	constructor: ->
-		super(GREEN)
-		@position = position(1,4)
+		super(GREEN, position(1, 4))
 
 class Board
 	constructor: ->
-		@ledMatrix = _.times(HEIGHT * WIDTH, BLACK)
+		@ledMatrix = _.times(HEIGHT * WIDTH, _.constant(BLACK))
 		@update()
 
-	add: (actor, x, y) ->
+	add: (actor) ->
 		if not (actor instanceof Actor)
 			throw new Error("Adding a non actor #{actor}")
-		pos = position(x,y)
-		if @ledMatrix[pos] isnt BLACK
+		pos = actor.position
+		if not _.isEqual(@ledMatrix[pos], BLACK)
 			return false
-		@ledMatrix[pos] = actor.getColour()
+		@ledMatrix[pos] = actor.colour
 		@update()
 		return true
+
 	update: ->
 		senseLeds.setPixels(@ledMatrix)
 
 
 class Breakout
-	constructor = ->
+	constructor: ->
 		@board = new Board()
 		@level = 1
-		@generateLevel()
 		@blocks = []
 		@player = new Player()
 		@ball = new Ball()
 		@board.add(@player)
 		@board.add(@ball)
+		@generateLevel()
 
 
-	generateLevel = ->
+	generateLevel: ->
 		for x in [0...4]
-			for y in [0...WIDTH] when _.random(0, level) > 0
+			for y in [0...WIDTH] when _.random(0, @level) > 0
 				block = new Block(x, y)
 				@board.add(block)
 				@blocks.push(block)
