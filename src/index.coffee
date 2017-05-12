@@ -4,7 +4,24 @@ if process.env.RESIN is '1'
 else
 	senseLeds =
 		setPixels: (arr) ->
-			console.log('setting', arr)
+			console.log()
+			for x in [0...HEIGHT]
+				str = ''
+				for y in [0...WIDTH]
+					pixel = arr[position(x,y)]
+					if _.isEqual(pixel, BLACK)
+						str += '.'
+					else if _.isEqual(pixel, RED)
+						str += 'R'
+					else if _.isEqual(pixel, GREEN)
+						str += 'G'
+					else if _.isEqual(pixel, BLUE)
+						str += 'B'
+					else
+						console.log('F: ', pixel, position(x,y), x, y)
+						str += 'F'
+				console.log(str)
+			console.log()
 _ = require 'lodash'
 Promise = require 'bluebird'
 
@@ -31,7 +48,7 @@ position = (x, y) ->
 		throw new Error("x is out of bounds: ${x}")
 	if y < 0 or y >= HEIGHT
 		throw new Error("y is out of bounds: ${y}")
-	return (HEIGHT - 1 - x) * WIDTH - 1 + y
+	return x + WIDTH * y
 
 positionXY = (pos) ->
 	x = pos % WIDTH
