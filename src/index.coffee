@@ -22,15 +22,27 @@ BLUE = colour(0,0,255)
 HEIGHT = 8
 WIDTH = 8
 
+clampX = (x) ->
+	return (x + WIDTH) % WIDTH
+clampY = (y) ->
+	return (y + HEIGHT) % HEIGHT
 position = (x, y) ->
-	console.log('xy', x, y)
-	console.log('(HEIGHT - x) * WIDTH + y', (HEIGHT - x) * WIDTH + y)
+	if x < 0 or x >= WIDTH
+		throw new Error("x is out of bounds: ${x}")
+	if y < 0 or y >= HEIGHT
+		throw new Error("y is out of bounds: ${y}")
 	return (HEIGHT - x) * WIDTH + y
+
+positionXY = (pos) ->
+	x = pos % WIDTH
+	y = pos // WIDTH
+	return {x, y}
 
 class Actor
 	constructor: (@board, @colour, @position) ->
 		@board.add(this)
-	move: ->
+	move: (x, y) ->
+		@board.move(this, x, y)
 
 class Player extends Actor
 	constructor: (board) ->
@@ -59,6 +71,17 @@ class Board
 		@update()
 		return true
 
+	delete: (actor) ->
+		@board[actor.position] = null
+
+	move: (actor, deltaX, deltaY) ->
+		@delete(actor)
+		{ x, y } = positionXY(actor.position)
+		x = clampX(x + deltaX)
+		y = clampY(y + deltaY)
+		pos = position(x, y)
+		actor.position = pos
+
 	update: ->
 		pixels = _.map @board, (actor) ->
 			if !actor?
@@ -78,7 +101,7 @@ class Breakout
 
 
 	generateLevel: ->
-		for x in [0...4]
+		for x in [HEIGHT-4...HEIGHT]
 			for y in [0...WIDTH] when _.random(0, @level) > 0
 				block = new Block(@board, x, y)
 				@blocks.push(block)
