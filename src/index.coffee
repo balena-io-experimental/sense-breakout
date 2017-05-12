@@ -1,13 +1,31 @@
+_ = require 'lodash'
+Promise = require 'bluebird'
+
 if process.env.RESIN is '1'
 	senseJoystick = require 'sense-joystick'
 	senseLeds = require 'sense-hat-led'
 else
+	senseJoystick =
+		getJoystick: Promise.method ->
+			on: (evt, cb) ->
+				Promise.delay(2000)
+				.return('right')
+				.then(cb)
+				.delay(1000)
+				.return('right')
+				.then(cb)
+				.delay(1000)
+				.return('right')
+				.then(cb)
+				.delay(1000)
+				.return('left')
+				.then(cb)
 	senseLeds =
 		setPixels: (arr) ->
 			console.log()
-			for x in [0...HEIGHT]
+			for y in [HEIGHT-1..0]
 				str = ''
-				for y in [0...WIDTH]
+				for x in [0...WIDTH]
 					pixel = arr[position(x,y)]
 					if _.isEqual(pixel, BLACK)
 						str += '.'
@@ -22,8 +40,6 @@ else
 						str += 'F'
 				console.log(str)
 			console.log()
-_ = require 'lodash'
-Promise = require 'bluebird'
 
 TICK_SPEED = process.env.TICK_SPEED || 400;
 
@@ -51,6 +67,7 @@ position = (x, y) ->
 	return x + WIDTH * y
 
 positionXY = (pos) ->
+	console.log('pos', pos)
 	x = pos % WIDTH
 	y = pos // WIDTH
 	return {x, y}
@@ -63,7 +80,7 @@ class Actor
 
 class Player extends Actor
 	constructor: (board) ->
-		super(board, BLUE, position(0, 4))
+		super(board, BLUE, position(4, 0))
 
 class Block extends Actor
 	constructor: (board, x, y) ->
@@ -71,7 +88,7 @@ class Block extends Actor
 
 class Ball extends Actor
 	constructor: (board) ->
-		super(board, GREEN, position(1, 4))
+		super(board, GREEN, position(4, 1))
 
 class Board
 	constructor: ->
@@ -83,6 +100,7 @@ class Board
 			throw new Error("Adding a non actor #{actor}")
 		pos = actor.position
 		if @board[pos] isnt null
+			throw new Error('Somethings already there!')
 			return false
 		@board[pos] = actor
 		@update()
@@ -94,10 +112,14 @@ class Board
 	move: (actor, deltaX, deltaY) ->
 		@delete(actor)
 		{ x, y } = positionXY(actor.position)
+		console.log('startx', x)
 		x = clampX(x + deltaX)
+		console.log('endx', x)
 		y = clampY(y + deltaY)
 		pos = position(x, y)
 		actor.position = pos
+		@add(actor)
+		@update()
 
 	update: ->
 		pixels = _.map @board, (actor) ->
@@ -116,15 +138,29 @@ class Breakout
 		@ball = new Ball(@board)
 		@generateLevel()
 
-
 	generateLevel: ->
-		for x in [HEIGHT-4...HEIGHT]
-			for y in [0...WIDTH] when _.random(0, @level) > 0
+		for y in [HEIGHT-4...HEIGHT]
+			for x in [0...WIDTH] when _.random(0, @level) > 0
 				block = new Block(@board, x, y)
 				@blocks.push(block)
 
+	right: ->
+		@player.move(1, 0)
+
+	left: ->
+		@player.move(-1, 0)
 
 
-
-new Breakout()
-
+senseJoystick.getJoystick()
+.then (joystick) ->
+	breakout = new Breakout()
+	joystick.on 'press', (val) ->
+		console.log('evt', val)
+		switch val
+			# when 'click'
+			# when 'up'
+			when 'right'
+				breakout.right()
+			# when 'down'
+			when 'left'
+				breakout.left()
