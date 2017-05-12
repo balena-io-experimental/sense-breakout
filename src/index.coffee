@@ -8,18 +8,19 @@ else
 	senseJoystick =
 		getJoystick: Promise.method ->
 			on: (evt, cb) ->
-				Promise.delay(2000)
-				.return('right')
-				.then(cb)
-				.delay(1000)
-				.return('right')
-				.then(cb)
-				.delay(1000)
-				.return('right')
-				.then(cb)
-				.delay(1000)
-				.return('left')
-				.then(cb)
+				if evt is 'press'
+					Promise.delay(2000)
+					.return('right')
+					.then(cb)
+					.delay(1000)
+					.return('right')
+					.then(cb)
+					.delay(1000)
+					.return('right')
+					.then(cb)
+					.delay(1000)
+					.return('left')
+					.then(cb)
 	senseLeds =
 		setPixels: (arr) ->
 			console.log()
@@ -41,7 +42,8 @@ else
 				console.log(str)
 			console.log()
 
-TICK_SPEED = process.env.TICK_SPEED || 400;
+TICK_SPEED = process.env.TICK_SPEED || 400
+MOVE_HOLD_SPEED = process.env.MOVE_HOLD_SPEED || 200
 
 colour = (r, g, b) ->
 	[r, g, b]
@@ -154,13 +156,24 @@ class Breakout
 senseJoystick.getJoystick()
 .then (joystick) ->
 	breakout = new Breakout()
+	right = _.bind(breakout.right, breakout)
+	left = _.bind(breakout.left, breakout)
+	evtInterval = null
+	move = (fn) ->
+		clearInterval(evtInterval)
+		fn()
+		evtInterval = setInterval(fn, MOVE_HOLD_SPEED)
+
+
+	joystick.on 'release', ->
+		clearInterval(evtInterval)
+
 	joystick.on 'press', (val) ->
-		console.log('evt', val)
 		switch val
 			# when 'click'
 			# when 'up'
 			when 'right'
-				breakout.right()
+				move(right)
 			# when 'down'
 			when 'left'
-				breakout.left()
+				move(left)
