@@ -31,7 +31,7 @@ position = (x, y) ->
 		throw new Error("x is out of bounds: ${x}")
 	if y < 0 or y >= HEIGHT
 		throw new Error("y is out of bounds: ${y}")
-	return (HEIGHT - x) * WIDTH + y
+	return (HEIGHT - 1 - x) * WIDTH - 1 + y
 
 positionXY = (pos) ->
 	x = pos % WIDTH
