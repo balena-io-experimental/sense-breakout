@@ -332,7 +332,7 @@ class Breakout
 			if levels[@level]?
 				levels[@level][y][x] is 1
 			else if not @board.get({ x, y })?
-				y > 2 and _.random(0, @level) > 0
+				y < 5 and _.random(0, @level) > 0
 
 		updatesDisabled = true
 		for y in [0...HEIGHT]
