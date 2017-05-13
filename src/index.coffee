@@ -217,7 +217,7 @@ class Ball extends Actor
 		# console.log("before #{@deltaX} #{@deltaY}")
 		while(@checkCollisionBounce())
 			true
-		if @point.y + @deltaY <= 0
+		if @point.y + @deltaY >= HEIGHT - 1
 			breakout.lose()
 			return
 		# console.log("after #{@deltaX} #{@deltaY}")
