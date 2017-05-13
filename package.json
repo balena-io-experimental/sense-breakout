@@ -17,6 +17,7 @@
     "sense-joystick": "0.0.2"
   },
   "devDependencies": {
-    "coffee-script": "^1.12.5"
+    "coffee-script": "^1.12.5",
+    "colors": "^1.1.2"
   }
 }
