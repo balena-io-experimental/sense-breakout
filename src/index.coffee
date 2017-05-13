@@ -1,10 +1,10 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 
-if process.env.RESIN is '1'
+try
 	senseJoystick = require 'sense-joystick'
 	senseLeds = require 'sense-hat-led'
-else
+catch
 	color = require('colors/safe')
 	DISPLAY_CHAR = ' -'
 	BG_COLOUR = color.bgCyan
@@ -66,7 +66,7 @@ else
 
 		setPixels: (arr) ->
 			str = '\n'
-			for y in [HEIGHT-1..0]
+			for y in [0...HEIGHT]
 				for x in [0...WIDTH]
 					pixel = arr[position({ x, y })]
 					str += bgColorify(pixel, DISPLAY_CHAR)
@@ -92,10 +92,10 @@ BLUE = colour(0,0,255)
 HEIGHT = 8
 WIDTH = 8
 
-PLAYER_START = { x: 3, y: 0 }
-BALL_START = { x: 4, y: 1 }
+PLAYER_START = { x: 3, y: 7 }
+BALL_START = { x: 4, y: 6 }
 # TEST Y FLAT BOUNCE WITH LEVEL 0
-# BALL_START = { x: 2, y: 1 }
+# BALL_START = { x: 2, y: 6 }
 
 
 clampX = (x) ->
@@ -172,7 +172,7 @@ class Ball extends Actor
 		@stop()
 		@set(BALL_START)
 		@deltaX = 1
-		@deltaY = 1
+		@deltaY = -1
 
 	checkCollisionBounce:  ->
 		collisionPoint = transformPoint(@point, @deltaX, @deltaY, false)
@@ -285,33 +285,33 @@ levels =
 	[
 		# 0: TEST CORNER BOUNCE
 		[
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
 			[ 1, 1, 1, 1, 1, 1, 1, 1]
 			[ 1, 1, 1, 1, 1, 1, 1, 1]
 			[ 1, 1, 1, 1, 1, 1, 1, 1]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
 		]
-		# 1: TEST X FLAT BOUNCE WITH LEVEL 0
+		# 1: TEST X FLAT BOUNCE
 		[
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
 			[ 1, 1, 1, 1, 1, 1, 0, 0]
 			[ 1, 1, 1, 1, 1, 1, 0, 0]
 			[ 1, 1, 1, 1, 1, 1, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
 		]
 		# 2: TEST EZ WIN
 		[
 			[ 0, 0, 0, 0, 0, 0, 0, 0]
 			[ 0, 0, 0, 0, 0, 0, 0, 0]
 			[ 0, 0, 0, 0, 0, 0, 0, 0]
-			[ 0, 0, 0, 0, 0, 0, 0, 0]
 			[ 0, 0, 0, 0, 0, 0, 0, 1]
+			[ 0, 0, 0, 0, 0, 0, 0, 0]
 			[ 0, 0, 0, 0, 0, 0, 0, 0]
 			[ 0, 0, 0, 0, 0, 0, 0, 0]
 			[ 0, 0, 0, 0, 0, 0, 0, 0]
@@ -335,7 +335,7 @@ class Breakout
 				y > 2 and _.random(0, @level) > 0
 
 		updatesDisabled = true
-		for y in [0...HEIGHT] #[HEIGHT-4...HEIGHT]
+		for y in [0...HEIGHT]
 			for x in [0...WIDTH] when shouldHaveBlock(x, y)
 				do =>
 					block = new Block(@board, { x, y })
